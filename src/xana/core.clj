@@ -1,5 +1,11 @@
 (ns xana.core
-  (:require [clucy.core :as clucy]))
+  (:use [xana.bibtex])
+  (:use [xana.search]))
 
-(def index (clucy/memory-index))
-
+(defn setup
+  []
+  (clear-db)
+  (load-db "/home/josh/git/misc/xana/test.bib")
+  (new-index)
+  (add-entries @db)
+  (clear-search))

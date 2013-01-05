@@ -6,7 +6,8 @@
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [org.jbibtex/jbibtex "1.0.1"]
                  [clucy "0.3.0"]
-                 [ritz/ritz-nrepl-middleware "0.6.0"]]
+                 [ritz/ritz-nrepl-middleware "0.6.0"]
+                 [seesaw "1.4.2"]]
   :repl-options {:nrepl-middleware
                  [ritz.nrepl.middleware.javadoc/wrap-javadoc
                   ritz.nrepl.middleware.simple-complete/wrap-simple-complete]})
