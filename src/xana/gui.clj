@@ -29,7 +29,7 @@
     (insert-at! results-table-model i (nth results i))))
 
 (def summary-textbox
-  (text :multi-line? true :editable? false :wrap-lines? true))
+  (editor-pane :content-type "text/html"))
 
 (defn search-listener
   [e]
@@ -37,14 +37,17 @@
     (let [search-input (select mainwindow [:#search-input])
           query (value search-input)]
       (search query)
-      (populate-table @results))))
+      (populate-table (sort-by :BibTeXkey (vals @results))))))
 
 (defn result-selection-listener
   [e]
   (try
     (let [t (select mainwindow [:#results-table])
           bibtex-key (.getValueAt t (.getSelectedRow t) 0)]
-      (value! summary-textbox (format-entry bibtex-key))
+      (value! summary-textbox
+              (if-let [frags (:_fragments (meta (get @results bibtex-key)))]
+                (format "%s<br/><br/>%s" (format-entry bibtex-key) frags)
+                (format-entry bibtex-key)))
       (when (= 2 (.getClickCount e))
         (open-file bibtex-key)))
     (catch Exception e)))
@@ -59,7 +62,8 @@
                          :listen [:key-pressed search-listener])
                    "wrap, growy 0, growx 1"]
                   [(scrollable (table-x :id :results-table :model results-table-model
-                                        :listen [:mouse-clicked result-selection-listener]))
+                                        :listen [:selection result-selection-listener
+                                                 :mouse-clicked result-selection-listener]))
                    "w 900px, h 300px, span 2, grow, wrap"]
                   [(scrollable summary-textbox) "h 300, span2, grow"]])))
 

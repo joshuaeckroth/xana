@@ -19,4 +19,6 @@
 
 (defn search
   [query]
-  (dosync (alter results (constantly (clucy/search @index query 100)))))
+  (let [r (clucy/search @index query 100
+                        :highlight {:field :abstract})]
+    (dosync (alter results (constantly (zipmap (map :BibTeXkey r) r))))))

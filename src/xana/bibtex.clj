@@ -12,7 +12,7 @@
   (let [formatter (ReferenceFormatter. (ACSReferenceStyle.))
         entry (first (filter #(= bibtex-key (:BibTeXkey %)) @db))]
     (try
-      (format "%s\n\n%s"
+      (format "%s<br/><br/>%s"
          (.format formatter (:jbibtex-entry entry) false)
          (if-let [abstract (:abstract entry)]
            (str/replace (str/replace abstract "\n" " ") #"^\s+" "")
@@ -34,7 +34,8 @@
   [jbibtex-db]
   (for [e (.getEntries jbibtex-db)]
     (update-in
-     (merge (apply hash-map
+     (merge {:abstract ""} ;; put keys that will be highlighted so they always are not nil
+            (apply hash-map
                    (mapcat (fn [kv] [(keyword (.getValue (.getKey kv)))
                                     (.getString (.getValue kv))])
                            (.entrySet (.getFields (.getValue e)))))
