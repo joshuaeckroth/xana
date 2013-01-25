@@ -44,22 +44,24 @@
   (try
     (let [t (select mainwindow [:#results-table])
           bibtex-key (.getValueAt t (.getSelectedRow t) 0)]
-      (println bibtex-key)
-      (value! summary-textbox (format-entry bibtex-key)))
+      (value! summary-textbox (format-entry bibtex-key))
+      (when (= 2 (.getClickCount e))
+        (open-file bibtex-key)))
     (catch Exception e)))
 
 (def mainwindow
   (frame :title "xana"
-         :content (mig-panel
-                   :constraints ["fill"]
-                   :items [[(label "Search") "grow 0"]
-                           [(text :id :search-input :columns 30
-                                  :listen [:key-pressed search-listener])
-                            "wrap, growy 0, growx 1"]
-                           [(scrollable (table-x :id :results-table :model results-table-model
-                                                 :listen [:selection result-selection-listener]))
-                            "w 900px, h 300px, span 2, grow, wrap"]
-                           [(scrollable summary-textbox) "h 300, span2, grow"]])))
+         :content
+         (mig-panel
+          :constraints ["fill"]
+          :items [[(label "Search") "grow 0"]
+                  [(text :id :search-input :columns 30
+                         :listen [:key-pressed search-listener])
+                   "wrap, growy 0, growx 1"]
+                  [(scrollable (table-x :id :results-table :model results-table-model
+                                        :listen [:mouse-clicked result-selection-listener]))
+                   "w 900px, h 300px, span 2, grow, wrap"]
+                  [(scrollable summary-textbox) "h 300, span2, grow"]])))
 
 (defn replwindow
   []

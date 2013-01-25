@@ -2,6 +2,7 @@
   (:import (java.io FileReader StringWriter))
   (:import (org.jbibtex BibTeXDatabase BibTeXFormatter BibTeXParser))
   (:import (org.jbibtex.citation ACSReferenceStyle ReferenceFormatter))
+  (:use [clojure.java.shell :only [sh]])
   (:require [clojure.string :as str]))
 
 (def db (ref []))
@@ -14,19 +15,32 @@
       (format "%s\n\n%s"
          (.format formatter (:jbibtex-entry entry) false)
          (if-let [abstract (:abstract entry)]
-           (str/replace abstract "\n" " ")
+           (str/replace (str/replace abstract "\n" " ") #"^\s+" "")
            ""))
       (catch Exception e (format "Error formatting: %s" (str e))))))
+
+(defn open-file
+  [bibtex-key]
+  (let [entry (first (filter #(= bibtex-key (:BibTeXkey %)) @db))]
+    (when-let [file (:file entry)]
+      (sh "xdg-open" (format "/home/josh/research/papers/%s" file)))))
+
+(defn set-file-location
+  [file]
+  (when file
+    (str/replace file #":.*" "")))
 
 (defn bibtex-entries
   [jbibtex-db]
   (for [e (.getEntries jbibtex-db)]
-    (merge (apply hash-map
-                  (mapcat (fn [kv] [(keyword (.getValue (.getKey kv)))
-                                   (.getString (.getValue kv))])
-                          (.entrySet (.getFields (.getValue e)))))
-           {:BibTeXkey (.getValue (.getKey e))
-            :jbibtex-entry (.getValue e)})))
+    (update-in
+     (merge (apply hash-map
+                   (mapcat (fn [kv] [(keyword (.getValue (.getKey kv)))
+                                    (.getString (.getValue kv))])
+                           (.entrySet (.getFields (.getValue e)))))
+            {:BibTeXkey (.getValue (.getKey e))
+             :jbibtex-entry (.getValue e)})
+     [:file] set-file-location)))
 
 (defn output-bibtex
   [jbibtex-db]
